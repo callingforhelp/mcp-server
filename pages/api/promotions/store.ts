@@ -9,13 +9,21 @@ export default async function handler(
     const authHeader = req.headers.get('authorization');
     console.log('Incoming Authorization Header:', authHeader);
     console.log('Configured API Key:', process.env.API_KEY);
-    console.log('Incoming Request Body:', req.body);
+
+    let parsedBody;
+    try {
+      parsedBody = JSON.parse(req.body);
+      console.log('Parsed Request Body:', parsedBody);
+    } catch (e) {
+      console.error('Error parsing request body:', e);
+      return res.status(400).json({ success: false, message: 'Invalid JSON body' });
+    }
 
     if (!authHeader || authHeader !== `Bearer ${process.env.API_KEY}`) {
       return res.status(401).json({ success: false, message: 'authentication failed' });
     }
 
-    const { id, vector, payload } = req.body;
+    const { id, vector, payload } = parsedBody;
 
     try {
       await qdrantClient.upsert('promotions', {
@@ -31,6 +39,7 @@ export default async function handler(
 
       res.status(200).json({ status: 'ok' });
     } catch (error) {
+      console.error('Error during Qdrant upsert:', error);
       res.status(500).json({ error: (error as Error).message });
     }
   } else {
