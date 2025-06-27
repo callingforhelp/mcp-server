@@ -9,6 +9,7 @@ export default async function handler(
     const authHeader = req.headers.get('authorization');
     console.log('Incoming Authorization Header:', authHeader);
     console.log('Configured API Key:', process.env.API_KEY);
+    console.log('Incoming Request Body:', req.body);
 
     if (!authHeader || authHeader !== `Bearer ${process.env.API_KEY}`) {
       return res.status(401).json({ success: false, message: 'authentication failed' });
