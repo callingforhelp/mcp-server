@@ -34,13 +34,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'api-key': process.env.QDRANT_API_KEY || '',
+            'Authorization': `Bearer ${process.env.QDRANT_API_KEY || ''}`,
           },
           body: JSON.stringify({
             name: collection,
             vectors: { size: 384, distance: 'Cosine' }, // Cohere embed-english-light-v3.0 produces 384-dim vectors
           }),
         });
+        console.log("Qdrant API Key being sent:", process.env.QDRANT_API_KEY ? "[KEY PRESENT]" : "[KEY MISSING]");
 
         if (!createCollectionResponse.ok) {
           const responseText = await createCollectionResponse.text(); // Read body once
