@@ -1,27 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
 
-export async function middleware(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
+export function middleware(req: NextRequest) {
+  const apiKey = req.headers.get('authorization');
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
     return new NextResponse(
       JSON.stringify({ success: false, message: 'authentication failed' }),
       { status: 401, headers: { 'content-type': 'application/json' } }
-    );
+    )
   }
 
-  const token = authHeader.split(' ')[1];
-
-  try {
-    await jwtVerify(token, new TextEncoder().encode(process.env.JWT_SECRET));
-    return NextResponse.next();
-  } catch (error) {
-    return new NextResponse(
-      JSON.stringify({ success: false, message: 'authentication failed' }),
-      { status: 401, headers: { 'content-type': 'application/json' } }
-    );
-  }
+  return NextResponse.next();
 }
 
 export const config = {
