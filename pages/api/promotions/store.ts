@@ -1,12 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import qdrantClient from '../../../lib/qdrant';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -15,27 +9,18 @@ export default async function handler(
     const authHeader = req.headers.get('authorization');
     console.log('Incoming Authorization Header:', authHeader);
     console.log('Configured API Key:', process.env.API_KEY);
-
-    let rawBody = '';
-    for await (const chunk of req) {
-      rawBody += chunk.toString();
-    }
-    console.log('Raw Request Body:', rawBody);
-
-    let parsedBody;
-    try {
-      parsedBody = JSON.parse(rawBody);
-      console.log('Parsed Request Body:', parsedBody);
-    } catch (e) {
-      console.error('Error parsing request body:', e);
-      return res.status(400).json({ success: false, message: 'Invalid JSON body' });
-    }
+    console.log('Received Request Body:', req.body);
 
     if (!authHeader || authHeader !== `Bearer ${process.env.API_KEY}`) {
       return res.status(401).json({ success: false, message: 'authentication failed' });
     }
 
-    const { id, vector, payload } = parsedBody;
+    const { id, vector, payload } = req.body;
+
+    // Basic validation to ensure required fields are present
+    if (!id || !vector || !payload) {
+      return res.status(400).json({ success: false, message: 'Missing required fields: id, vector, or payload.' });
+    }
 
     try {
       await qdrantClient.upsert('promotions', {
