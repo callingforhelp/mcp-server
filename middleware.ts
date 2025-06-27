@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(req: NextRequest) {
-  const apiKey = req.headers.get('authorization');
+  const authHeader = req.headers.get('authorization');
 
-  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return new NextResponse(
       JSON.stringify({ success: false, message: 'authentication failed' }),
       { status: 401, headers: { 'content-type': 'application/json' } }
-    )
+    );
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  if (token !== process.env.API_KEY) {
+    return new NextResponse(
+      JSON.stringify({ success: false, message: 'authentication failed' }),
+      { status: 401, headers: { 'content-type': 'application/json' } }
+    );
   }
 
   return NextResponse.next();
