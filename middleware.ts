@@ -14,7 +14,7 @@ export async function middleware(req: NextRequest) {
   const token = authHeader.split(' ')[1];
 
   try {
-    await jwtVerify(token, new TextEncoder().encode(process.env.INTERNAL_API_KEY));
+    await jwtVerify(token, new TextEncoder().encode(process.env.JWT_SECRET));
     return NextResponse.next();
   } catch (error) {
     return new NextResponse(
