@@ -6,11 +6,11 @@ export default async function handler(
 ) {
   console.log('Query Endpoint - Method:', req.method);
   console.log('Query Endpoint - Headers:', req.headers);
-  console.log('Query Endpoint - Query Parameters:', req.query);
+  console.log('Query Endpoint - Raw Query Parameters:', req.query);
 
-  // Just return the query parameters to see what's received
-  res.status(200).json({
-    status: 'Received query, check logs for parameters.',
+  // Just return a static success to see if the request even reaches here
+  return res.status(200).json({
+    status: 'Received query request, check logs for parameters.',
     receivedMethod: req.method,
     receivedHeaders: req.headers,
     receivedQuery: req.query,
