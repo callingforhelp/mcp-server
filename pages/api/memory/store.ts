@@ -28,11 +28,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await qdrant.getCollection(collection);
     } catch (error: any) {
       if (error.status === 404) {
-        console.log(`Collection ${collection} not found, creating it...`);
-        await qdrant.createCollection(collection, {
-          vectors: { size: 384, distance: 'Cosine' }, // Cohere embed-english-light-v3.0 produces 384-dim vectors
+        console.log(`Collection ${collection} not found, creating it manually...`);
+        const createCollectionUrl = `${process.env.QDRANT_URL}/collections`;
+        const createCollectionResponse = await fetch(createCollectionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': process.env.QDRANT_API_KEY || '',
+          },
+          body: JSON.stringify({
+            name: collection,
+            vectors: { size: 384, distance: 'Cosine' }, // Cohere embed-english-light-v3.0 produces 384-dim vectors
+          }),
         });
-        console.log(`Collection ${collection} created.`);
+
+        if (!createCollectionResponse.ok) {
+          const errorData = await createCollectionResponse.json();
+          console.error('Error creating collection manually:', errorData);
+          throw new Error(`Failed to create collection: ${createCollectionResponse.statusText}`);
+        }
+        console.log(`Collection ${collection} created manually.`);
       } else {
         throw error; // Re-throw other errors
       }
