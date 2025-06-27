@@ -1,27 +1,22 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import qdrantClient from '../../../lib/qdrant';
+import { NextApiRequest, NextApiResponse } from 'next';
+import qdrant from '../../lib/qdrant';
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method === 'POST') { // Changed from GET to POST
-    const { vector, filter } = req.body;
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
 
-    try {
-      const searchResult = await qdrantClient.search('promotions', {
-        vector,
-        filter,
-        limit: 10,
-      });
+  const { collection, query } = req.body;
 
-      res.status(200).json(searchResult);
-    } catch (error) {
-      console.error('Error during Qdrant search:', error);
-      res.status(500).json({ error: (error as Error).message });
-    }
-  } else {
-    res.setHeader('Allow', ['POST']); // Changed allowed method to POST
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+  if (!collection || !query) {
+    return res.status(400).json({ message: 'Missing collection or query' });
+  }
+
+  try {
+    const results = await qdrant.search(collection, query);
+    res.status(200).json(results);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error querying data from Qdrant' });
   }
 }
