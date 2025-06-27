@@ -6,6 +6,12 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === 'POST') {
+    const authHeader = req.headers.get('authorization');
+
+    if (!authHeader || authHeader !== `Bearer ${process.env.API_KEY}`) {
+      return res.status(401).json({ success: false, message: 'authentication failed' });
+    }
+
     const { id, vector, payload } = req.body;
 
     try {
