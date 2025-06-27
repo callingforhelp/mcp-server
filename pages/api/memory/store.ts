@@ -43,9 +43,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
         if (!createCollectionResponse.ok) {
-          const errorData = await createCollectionResponse.json();
+          let errorData;
+          try {
+            errorData = await createCollectionResponse.json();
+          } catch (jsonError) {
+            errorData = await createCollectionResponse.text();
+          }
           console.error('Error creating collection manually:', errorData);
-          throw new Error(`Failed to create collection: ${createCollectionResponse.statusText}`);
+          throw new Error(`Failed to create collection: ${createCollectionResponse.status} ${createCollectionResponse.statusText}`);
         }
         console.log(`Collection ${collection} created manually.`);
       } else {
