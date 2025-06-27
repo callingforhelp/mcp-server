@@ -6,7 +6,19 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === 'GET') {
-    const { vector, filter } = req.body;
+    let vector: number[] | undefined;
+    let filter: object | undefined;
+
+    try {
+      if (req.query.vector) {
+        vector = JSON.parse(req.query.vector as string);
+      }
+      if (req.query.filter) {
+        filter = JSON.parse(req.query.filter as string);
+      }
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid JSON for vector or filter in query parameters.' });
+    }
 
     try {
       const searchResult = await qdrantClient.search('promotions', {
