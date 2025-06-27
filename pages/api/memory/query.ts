@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import qdrant from '../../lib/qdrant';
+import qdrant from '../../../lib/qdrant';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
