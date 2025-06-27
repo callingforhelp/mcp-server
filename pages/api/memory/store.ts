@@ -43,11 +43,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
         if (!createCollectionResponse.ok) {
+          const responseText = await createCollectionResponse.text(); // Read body once
           let errorData;
           try {
-            errorData = await createCollectionResponse.json();
+            errorData = JSON.parse(responseText);
           } catch (jsonError) {
-            errorData = await createCollectionResponse.text();
+            errorData = responseText; // Use raw text if not JSON
           }
           console.error('Error creating collection manually:', errorData);
           throw new Error(`Failed to create collection: ${createCollectionResponse.status} ${createCollectionResponse.statusText}`);
