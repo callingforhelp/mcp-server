@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import qdrantClient from '../../../lib/qdrant';
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,39 +8,16 @@ export default async function handler(
     const authHeader = req.headers.get('authorization');
     console.log('Incoming Authorization Header:', authHeader);
     console.log('Configured API Key:', process.env.API_KEY);
-
-    let parsedBody;
-    try {
-      parsedBody = JSON.parse(req.body);
-      console.log('Parsed Request Body:', parsedBody);
-    } catch (e) {
-      console.error('Error parsing request body:', e);
-      return res.status(400).json({ success: false, message: 'Invalid JSON body' });
-    }
+    console.log('Incoming Request Body:', req.body);
 
     if (!authHeader || authHeader !== `Bearer ${process.env.API_KEY}`) {
       return res.status(401).json({ success: false, message: 'authentication failed' });
     }
 
-    const { id, vector, payload } = parsedBody;
+    // If we reach here, authentication passed.
+    // We are temporarily skipping Qdrant interaction to debug the 400 error.
+    return res.status(200).json({ status: 'Authentication successful, and request received.' });
 
-    try {
-      await qdrantClient.upsert('promotions', {
-        wait: true,
-        points: [
-          {
-            id,
-            vector,
-            payload,
-          },
-        ],
-      });
-
-      res.status(200).json({ status: 'ok' });
-    } catch (error) {
-      console.error('Error during Qdrant upsert:', error);
-      res.status(500).json({ error: (error as Error).message });
-    }
   } else {
     res.setHeader('Allow', ['POST']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
